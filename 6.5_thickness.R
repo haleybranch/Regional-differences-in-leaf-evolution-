@@ -1,4 +1,4 @@
-#read in leaf thickness data
+#### leaf thickness #####
 library(tidyverse)
 library(lmerTest)
 library(lme4)
@@ -13,6 +13,13 @@ thickness <- read_csv("Data/Mesophyll_proportions_all.csv")
 thickness$Average_thick <- as.numeric(thickness$Average_thick)
 thickness <- thickness %>% filter(!is.na(Average_thick))
 
+#mixed effects model
+#lmer(response ~ effect1*effect2*effect3 + (1|random), data)
+# effect1: treatment = dry or wet 
+# effect2: year = pre or peak (which corresponds to climatic drought timing) 
+# effect 3: site = S02, S07, S11, S15, S16, S36 (these are 3 southern sites and 3 northern)
+# random1 = replicate
+# random2 = PlantID (random sampling of individuals from a given site, not specifically chosen)
 
 #change treatment, prepeak, and site to characters
 thickness$Treatment <- as.character(thickness$Treatment)
@@ -21,15 +28,17 @@ thickness$PrePeak <- as.character(thickness$PrePeak)
 thickness$PlantID <- as.character(thickness$ID)
 thickness$Rep <- as.character(thickness$Rep)
 
-
-#remove S11 and S16, since they were not supposed to be included in the first place
+#remove S11 and S16 because they were not supposed to be sectioned
 thickness_subset <- subset(thickness,Site != "S11")
 thickness_subset2 <- subset(thickness_subset, Site != "S16")
 thickness_all <- thickness
 thickness <- thickness_subset2   
+#thickness <- na.omit(thickness)
 
+#set up type 3 ANOVA 
 type3 <- list(Treatment = contr.sum, Region = contr.sum, PrePeak = contr.sum)
 
+#create mixed model
 mod1 <- lmer(Average_thick ~ Rep + Treatment*PrePeak*Region + (1|Site/ID),contrasts =type3, data=thickness)
 
 #check for model violations
@@ -45,10 +54,9 @@ hist(resid(mod1)) #histogram
 
 plot(mod1, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
 
-
-#grab the coefficents 
+#grab the coefficents and ANOVA results
 dm <- summary(mod1)
-thick_aov <- Anova(mod1, type = 3) #treatment = 0.004, Trt*Reg = 0.002, Year*Reg = 0.05
+thick_aov <- Anova(mod1, type = 3) 
 #write.csv(thick_aov, "Results/thickness_aov.csv")
 
 #grab effect sizes of the fixed factors
@@ -88,15 +96,13 @@ adjust.p <- mt.rawp2adjp(summ.contrast$p.value, proc=c("BH"), alpha = 0.05, na.r
 adjust.p.df<- as.data.frame(adjust.p$adjp) %>%
   rename(p.value=rawp)%>%
   inner_join(summ.contrast)
-#Results:
-# South Pre W-D = 0.0007
 #write.csv(adjust.p.df, "Results/thickness_correctedp.csv")
 
+# create point plot
 vis_thick_wet<-visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="Wet"))
 vis_thick_dry <- visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="Dry")) 
 
 Res_thick_all <- rbind(vis_thick_wet$res,vis_thick_dry$res)
-
 
 thick_res_se <- Res_thick_all%>%
   group_by(Treatment,Region,PrePeak)%>%
@@ -124,4 +130,3 @@ Res_thick_all_plot <- Res_thick_all_plot + facet_wrap(.~Region) +
   theme(strip.background = element_blank(), strip.text.x=element_blank())
 Res_thick_all_plot
 # save 8x6
-
