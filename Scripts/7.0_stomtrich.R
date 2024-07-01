@@ -16,8 +16,11 @@ all$Stom_mm <- as.numeric(all$Stom_mm)
 below <- subset(all, Placement == "be")
 above <- subset(all, Placement == "ab")
 
+#set up type 3 ANOVA
 type3 <- list(Treatment = contr.sum, Region = contr.sum, PrePeak = contr.sum)
 
+### below leaf stomatal density ########
+# make model
 mod1 <- lmer(Stom_mm ~ Rep + Treatment*PrePeak*Region + (1|Site/ID),contrasts=type3, data=below)
 
 #check for model violations
@@ -36,7 +39,7 @@ plot(mod1, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
 
 #grab the coefficents 
 dm <- summary(mod1)
-stom_ad_aov <- Anova(mod1,type=3)  #treatment = 0.05, Region = 0.0003, Trt*Year = 0.04, Year*Reg = 0.0008
+stom_ad_aov <- Anova(mod1,type=3)  
 #write.csv(stom_ad_aov, "Results/stom_below_aov.csv")
 
 #grab effect sizes of the fixed factors
@@ -78,11 +81,10 @@ adjust.p <- mt.rawp2adjp(summ.contrast$p.value, proc=c("BH"), alpha = 0.05, na.r
 adjust.p.df<- as.data.frame(adjust.p$adjp) %>%
   rename(p.value=rawp)%>%
   inner_join(summ.contrast)
-#Results:
 #write.csv(adjust.p.df, "Results/stom_ad_correctedp.csv")
 
 
-### above ###
+####### above leaf stomatal density ########
 
 mod2 <- lmer(Stom_mm ~ Rep + Treatment*Region*PrePeak + (1|Site/ID), contrasts = type3, data=above)
 
@@ -102,7 +104,7 @@ plot(mod2, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
 
 #grab the coefficents 
 dm <- summary(mod2)
-stom_above_aov <- Anova(mod2, type=3)  #Nothing
+stom_above_aov <- Anova(mod2, type=3)  
 #write.csv(stom_ad_aov, "Results/stom_above_aov.csv")
 
 #grab effect sizes of the fixed factors
@@ -144,11 +146,10 @@ adjust.p <- mt.rawp2adjp(summ.contrast$p.value, proc=c("BH"), alpha = 0.05, na.r
 adjust.p.df<- as.data.frame(adjust.p$adjp) %>%
   rename(p.value=rawp)%>%
   inner_join(summ.contrast)
-#Results:
 #write.csv(adjust.p.df, "Results/stom_above_correctedp.csv")
 
-
-#Lower stomatal density plot
+####### graphs ##############
+######## Lower stomatal density plot
 vis_stbe_wet<-visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="Wet"))
 vis_stbe_dry <- visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="Dry")) 
 
@@ -181,11 +182,12 @@ Res_stbe_all_plot <- Res_stbe_all_plot + facet_wrap(.~Region) +
 Res_stbe_all_plot
 # save 8x6
 
-#Upper stomatal density plot 
+############# Upper stomatal density plot 
 vis_stab_wet<-visreg(mod2, xvar="PrePeak", by="Region", cond=list(Treatment="Wet"))
 vis_stab_dry <- visreg(mod2, xvar="PrePeak", by="Region", cond=list(Treatment="Dry")) 
 
 Res_stab_all <- rbind(vis_stab_wet$res,vis_stab_dry$res)
+
 
 stab_res_se <- Res_stab_all%>%
   group_by(Treatment,Region,PrePeak)%>%
@@ -218,35 +220,37 @@ Res_stab_all_plot
 
 ############### trichomes ########################
 
-mod3 <- lmer(Trich_mm ~ Rep + Treatment*Region*PrePeak + (1|Site/ID), contrasts = type3, data=below)
+#### below leaf trichome density ############
+
+mod1 <- lmer(Trich_mm ~ Rep + Treatment*Region*PrePeak + (1|Site/ID), contrasts = type3, data=below)
 
 
 #check for model violations
-plot(mod3, type=c("p","smooth"), col.line=1) #fitted vs residuals
+plot(mod1, type=c("p","smooth"), col.line=1) #fitted vs residuals
 
-plot(mod3,
+plot(mod1,
      sqrt(abs(resid(.)))~fitted(.),
      type=c("p","smooth"), col.line=1) #scale-location plot
 
-lattice::qqmath(mod3) # qqplot
+lattice::qqmath(mod1) # qqplot
 
-hist(resid(mod3)) #histogram
+hist(resid(mod1)) #histogram
 
-plot(mod3, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
+plot(mod1, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
 
 #grab the coefficents 
-dm <- summary(mod3)
-trichbe_aov <- Anova(mod3, type=3) # treatment < 0.001, treatment*region < 0.001
+dm <- summary(mod1)
+trichbe_aov <- Anova(mod1, type=3) 
 #write.csv(trichbe_aov, "Results/trich_below_aov.csv")
 
 #grab effect sizes of the fixed factors
 #es = difference between groups/standard deviation of the variance 
-effsize <- omega_squared(mod3)
+effsize <- omega_squared(mod1)
 #write.csv(effsize, "Results/trich_below_effectsize.csv")
 
 #determine which of the contrasts are driving the differences
 
-emm1 = emmeans(mod3, specs = ~ Treatment*Region*PrePeak)
+emm1 = emmeans(mod1, specs = ~ Treatment*Region*PrePeak)
 emm1
 
 
@@ -278,35 +282,34 @@ adjust.p <- mt.rawp2adjp(summ.contrast$p.value, proc=c("BH"), alpha = 0.05, na.r
 adjust.p.df<- as.data.frame(adjust.p$adjp) %>%
   rename(p.value=rawp)%>%
   inner_join(summ.contrast)
-#Results:
 #write.csv(adjust.p.df, "Results/trich_below_correctedp.csv")
 
 
-### above ###
-mod4 <- lmer(Trich_mm ~ Rep + Treatment*Region*PrePeak + (1|Site/ID), contrast = type3, data=above)
+### above leaf trichome density ###
+mod3 <- lmer(Trich_mm ~ Rep + Treatment*Region*PrePeak + (1|Site/ID), contrast = type3, data=above)
 
 
 #check for model violations
-plot(mod4, type=c("p","smooth"), col.line=1) #fitted vs residuals
+plot(mod3, type=c("p","smooth"), col.line=1) #fitted vs residuals
 
-plot(mod4,
+plot(mod3,
      sqrt(abs(resid(.)))~fitted(.),
      type=c("p","smooth"), col.line=1) #scale-location plot
 
-lattice::qqmath(mod4) # qqplot
+lattice::qqmath(mod3) # qqplot
 
-hist(resid(mod4)) #histogram
+hist(resid(mod3)) #histogram
 
-plot(mod4, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
+plot(mod3, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
 
 #grab the coefficents 
-dm <- summary(mod4)
-trich_above_aov <- Anova(mod4, type=3) # treatment < 0.001, treatment*region = 0.08
+dm <- summary(mod3)
+trich_above_aov <- Anova(mod3, type=3) 
 #write.csv(trich_above_aov, "Results/trich_above_aov.csv")
 
 #grab effect sizes of the fixed factors
 #es = difference between groups/standard deviation of the variance 
-effsize <- omega_squared(mod4)
+effsize <- omega_squared(mod3)
 #write.csv(effsize, "Results/trich_above_effectsize.csv")
 
 #determine which of the contrasts are driving the differences
@@ -343,18 +346,14 @@ adjust.p <- mt.rawp2adjp(summ.contrast$p.value, proc=c("BH"), alpha = 0.05, na.r
 adjust.p.df<- as.data.frame(adjust.p$adjp) %>%
   rename(p.value=rawp)%>%
   inner_join(summ.contrast)
-#Results:
 #write.csv(adjust.p.df, "Results/trich_above_correctedp.csv")
 
-
-
-
-#Lower trichome density plot
-vis_trbe_wet<-visreg(mod3, xvar="PrePeak", by="Region", cond=list(Treatment="Wet"))
-vis_trbe_dry <- visreg(mod3, xvar="PrePeak", by="Region", cond=list(Treatment="Dry")) 
+######### graphs #######################
+######### Lower trichome density plot
+vis_trbe_wet<-visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="Wet"))
+vis_trbe_dry <- visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="Dry")) 
 
 Res_trbe_all <- rbind(vis_trbe_wet$res,vis_trbe_dry$res)
-
 
 trbe_res_se <- Res_trbe_all%>%
   group_by(Treatment,Region,PrePeak)%>%
@@ -382,9 +381,9 @@ Res_trbe_all_plot <- Res_trbe_all_plot + facet_wrap(.~Region) +
 Res_trbe_all_plot
 # save 8x6
 
-#Upper trichome density plot 
-vis_trab_wet<-visreg(mod4, xvar="PrePeak", by="Region", cond=list(Treatment="Wet"))
-vis_trab_dry <- visreg(mod4, xvar="PrePeak", by="Region", cond=list(Treatment="Dry")) 
+####### Upper trichome density plot 
+vis_trab_wet<-visreg(mod3, xvar="PrePeak", by="Region", cond=list(Treatment="Wet"))
+vis_trab_dry <- visreg(mod3, xvar="PrePeak", by="Region", cond=list(Treatment="Dry")) 
 
 Res_trab_all <- rbind(vis_trab_wet$res,vis_trab_dry$res)
 
@@ -414,7 +413,6 @@ Res_trab_all_plot <- Res_trab_all_plot + facet_wrap(.~Region) +
   theme(strip.background = element_blank(), strip.text.x=element_blank())
 Res_trab_all_plot
 # save 8x6
-
 
 
 library(cowplot)
