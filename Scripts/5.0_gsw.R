@@ -9,9 +9,31 @@ library(multtest)
 library(visreg)
 library(ggplot2)
 
-############################# 50ppm ##############################
-#load in data
+#load in data for each ACi replicate
+#Rep 1
+#rep1 <- data.frame(read.csv("Data/Rep_1_Aci.csv"))
 
+#Rep 2
+#rep2 <- data.frame(read.csv("Data/Rep_2_Aci.csv"))
+
+#Rep 3
+#rep3 <- data.frame(read.csv("Data/Rep_3_Aci.csv"))
+
+############# need to grab gsw for 50ppm, Ci.transition, and 400ppm  ##########
+############################# 50ppm ##############################
+#rep1
+#rep1_50_gsw <- rep1 %>% filter(Ca < 60)
+#write.csv(rep1_ci_gsw, file="Data/rep1_ci_gsw.csv")
+#rep1_50_gsw <- data.frame(read.csv("Data/rep1_ca_gsw.csv"))
+#rep1_50_gsw$X.1 <- NULL
+
+#rep2
+#rep2_50_gsw <- rep2 %>% filter(Ca < 60)
+#rep3
+#rep3_50_gsw <- rep3 %>% filter(Ca < 60)
+
+#gsw_50 <- rbind(rep1_50_gsw, rep2_50_gsw, rep3_50_gsw)
+#write.csv(gsw_50, file="Data/gsw_50.csv")
 gsw_50 <- data.frame(read.csv("Data/gsw_50.csv"))
 
 #make new column with  PrePeak
@@ -28,10 +50,7 @@ colnames(peak)[14]<-"PrePeak"
 #gsw_50 <- rbind(pre,peak)
 #write.csv(gsw_50, file="Data/gsw_50.csv")
 gsw_50 <- data.frame(read.csv("Data/gsw_50.csv"))
-#gsw_50$Region <- gsw_50$Site %>% c("SO2"= "South", "S07"="South","S11"="South",
-                # "S15"="North","S16"="North","S36"="North")
-  
-type3 <- list(Treatment = contr.sum, Region = contr.sum, PrePeak = contr.sum)
+
 mod1 <- lmer(gsw ~ Rep + Treatment*Region*PrePeak + (1|Site/ID), contrasts = type3, data=gsw_50)
 
 #check for model violations
@@ -50,7 +69,7 @@ plot(mod1, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
 
 #grab the coefficents 
 dm <- summary(mod1)
-gsw_aov <- Anova(mod1, type = 3) # treatment < 0.001, region*prepeak = 0.02
+gsw_aov <- Anova(mod1, type = 3) 
 #write.csv(gsw_aov, "Results/gsw_aov.csv")
 
 #grab effect sizes of the fixed factors
@@ -139,7 +158,6 @@ plot(mod3,
      type=c("p","smooth"), col.line=1) #scale-location plot
 
 lattice::qqmath(mod3) # qqplot
-#residuals have light tails 
 
 hist(resid(mod3)) #histogram
 
@@ -189,8 +207,6 @@ adjust.p <- mt.rawp2adjp(summ.contrast$p.value, proc=c("BH"), alpha = 0.05, na.r
 adjust.p.df<- as.data.frame(adjust.p$adjp) %>%
   rename(p.value=rawp)%>%
   inner_join(summ.contrast)
-#Results:
-# Marginal significance (p=0.1) for WSpe-WSPr, DNPe-WNPe, DSPe-WSpe, WNPe-WNPr)
 #write.csv(adjust.p.df, "Results/gsw400_correctedp.csv")
 
 
