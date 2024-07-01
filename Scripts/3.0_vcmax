@@ -1,5 +1,4 @@
 ## assimliation-intercellular carbon dioxide estimates ####
-#read in assimilation data
 library(tidyverse)
 library(lme4)
 library(emmeans)
@@ -8,14 +7,16 @@ library(visreg)
 library(ggplot2)
 library(effectsize)
 library(car)
+
+#read in assimilation data
 aci_data <- read.csv("Data/aci_data_all.csv")
 aci_data$Vcmax <- as.numeric(aci_data$Vcmax)
 aci_data$Jmax <- as.numeric(aci_data$Jmax)
-aci_data <- aci_data %>% filter(Vcmax < 200)
+aci_data <- aci_data %>% filter(Vcmax < 200) # removed because of instrument error
 aci_data <- aci_data %>% filter(!is.na(Vcmax))
 
 #####
-type3 <- list(Treatment = contr.sum, Region = contr.sum, PrePeak = contr.sum)
+type3 <- list(Treatment = contr.sum, Region = contr.sum, PrePeak = contr.sum) #to set up type 3 ANOVA
 mod1 = lmer(Vcmax~ Rep + Treatment*Region*PrePeak + (1|Site/ID), contrasts = type3, data=aci_data)
 
 #check for model violations
@@ -32,13 +33,12 @@ hist(resid(mod1)) #histogram
 plot(mod1, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
 
 
-#grab the coefficents 
+#grab the coefficents and ANOVA
 dm <- summary(mod1)
-Vcmax_aov <- Anova(mod1, type = 3) # Region:PrePeak 0.05, 3way = 0.05
+Vcmax_aov <- Anova(mod1, type = 3) 
 #write.csv(Vcmax_aov, "Results/Vcmax_aov.csv")
 
 #grab effect sizes of the fixed factors
-#es = difference between groups/standard deviation of the variance 
 effsize <- omega_squared(mod1)
 #write.csv(effsize, "Results/Vcmax_effectsize.csv")
 
@@ -70,6 +70,7 @@ contrast.vcmax <- contrast(emm1, method = contrasts, adjust="none")
 summ.contrast <- summary(contrast.vcmax)
 
 #use a pvalue correction for the multiple tests 
+#"BH" is the benjamini hochberg correction
 adjust.p <- mt.rawp2adjp(summ.contrast$p.value, proc=c("BH"), alpha = 0.05, na.rm = FALSE)
 
 #realign the adjusted pvalues with the contrast names
@@ -77,10 +78,9 @@ adjust.p.df<- as.data.frame(adjust.p$adjp) %>%
   rename(p.value=rawp)%>%
   inner_join(summ.contrast)
 #Results:
-# Marginal significance (p=0.1) for DNPe-WNPe)
 #write.csv(adjust.p.df, "Results/vcmax_correctedp.csv")
 
-### point plot
+### generate a line and point plot
 
 vis_vcmax_wet<-visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="wet"))
 vis_vcmax_dry <- visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="dry")) 
