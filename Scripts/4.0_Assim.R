@@ -1,4 +1,4 @@
-## daytime max Assimilation ####
+## Assimilation ####
 #load libraries
 library(lmerTest)
 library(lme4)
@@ -26,16 +26,15 @@ plot(mod1,
      sqrt(abs(resid(.)))~fitted(.),
      type=c("p","smooth"), col.line=1) #scale-location plot
 
-
 lattice::qqmath(mod1) # qqplot
 
 hist(resid(mod1)) #histogram
 
 plot(mod1, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
 
-#grab the coefficents 
+#grab the coefficents and run ANOVA
 dm <- summary(mod1)
-Amax_aov <- Anova(mod1, type = 3) # treatment:region 0.006, Region:PrePeak 0.004, 3way = 0.1
+Amax_aov <- Anova(mod1, type = 3) 
 #write.csv(Amax_aov, "Results/Amax_aov_revised.csv")
 
 #grab effect sizes of the fixed factors
@@ -64,8 +63,6 @@ contrasts <- list("DNPe-WNPe" = DNPe - WNPe, "DSPe-WSPe" = DSPe - WSPe,
                   "DNPe-DSPe" = DNPe - DSPe, "WNPe-WSPe" = WNPe - WSPe,
                   "DNPr-DSPr" = DNPr - DSPr, "WNPr-WSPr" = WNPr - WSPr)
 
-
-
 #grab the raw pvalues without a posthoc adjustment
 contrast.amax <- contrast(emm1, method = contrasts, adjust="none") 
 summ.contrast <- summary(contrast.amax)
@@ -77,12 +74,10 @@ adjust.p <- mt.rawp2adjp(summ.contrast$p.value, proc=c("BH"), alpha = 0.05, na.r
 adjust.p.df<- as.data.frame(adjust.p$adjp) %>%
   rename(p.value=rawp)%>%
   inner_join(summ.contrast)
-#Results:
-# Marginal significance (p=0.1) for WSpe-WSPr, DNPe-WNPe, DSPe-WSpe, WNPe-WNPr)
 #write.csv(adjust.p.df, "Results/amax_correctedp.csv")
 
 
-### point plot
+### make a point plot
 
 vis_A_wet<-visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="wet"))
 vis_A_dry <- visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="dry")) 
@@ -117,14 +112,11 @@ Res_A_all_plot_1
 
 
 
-#### Net assimilation at 400ppm
-
+#### Net assimilation at 400ppm ##########
 
 #read in data
 all <- read_csv("Data/gsw_400.csv")
 type3 <- list(Treatment = contr.sum, Region = contr.sum, PrePeak = contr.sum)
-
-#write.csv(all, "Data/gsw_400.csv")
 
 #build 3-way interaction mixed effects model
 mod2 <- lmer(A ~ Rep + Treatment*Region*PrePeak + (1|Site/ID), contrasts = type3, data=all)
@@ -143,9 +135,9 @@ hist(resid(mod2)) #histogram
 
 plot(mod2, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
 
-#grab the coefficents 
+#grab the coefficents and run ANOVA
 dm <- summary(mod2)
-Amax_aov <- Anova(mod2) # treatment:region:prepeak = 0.08
+Amax_aov <- Anova(mod2) 
 #write.csv(Amax_aov, "Results/Anet_aov_revised.csv")
 
 #grab effect sizes of the fixed factors
@@ -187,8 +179,6 @@ adjust.p <- mt.rawp2adjp(summ.contrast$p.value, proc=c("BH"), alpha = 0.05, na.r
 adjust.p.df<- as.data.frame(adjust.p$adjp) %>%
   rename(p.value=rawp)%>%
   inner_join(summ.contrast)
-#Results:
-# Marginal significance (p=0.1) for WSpe-WSPr, DNPe-WNPe, DSPe-WSpe, WNPe-WNPr)
 #write.csv(adjust.p.df, "Results/anet_correctedp.csv")
 
 
@@ -223,7 +213,3 @@ Res_A_all_plot_2 <-Res_A_all_plot_2 + theme(
 Res_A_all_plot_2 <- Res_A_all_plot_2 + facet_wrap(.~Region) +
   theme(strip.background = element_blank(), strip.text.x=element_blank())
 Res_A_all_plot_2
-
-#6x5
-
-
