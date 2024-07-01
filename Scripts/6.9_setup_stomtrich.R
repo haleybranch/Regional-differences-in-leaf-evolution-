@@ -1,4 +1,4 @@
-########### Data wrangling for stomata and trichomes ###########
+#### Grab all stomata and trichome data ####
 rep1 <- read.csv("Data/Rep1_stomata_trich.csv")
 rep2 <- read.csv("Data/Rep2_stomata_trich.csv")
 rep3 <- read.csv("Data/Rep3_stomata_trich.csv")
