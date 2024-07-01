@@ -53,3 +53,4 @@ plot_bio <- clim %>%
 library(cowplot)
 
 plot_grid(plot_MAT, plot_MAP, plot_bio, ncol=1, axis = "l", align = "v")
+
