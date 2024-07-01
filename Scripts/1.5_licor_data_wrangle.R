@@ -2,7 +2,7 @@
 library(tidyverse)
 
 
-#### Data wrangling 
+#### Data wrangling rep 1
 licor_data <-list.files(path = "Data/LICOR", recursive=T,pattern="*.csv", full.names = T) #finds the files in the "LICOR" Folder
 licor_data_Names <-gsub(".csv","", licor_data) %>% gsub("Data/LICOR/","",.) #grabs file names
 
@@ -46,47 +46,24 @@ df <- df[df$obs !=14, ]
 #add new column and merge names into dataframe
 df$ID <- ID$`ID-1`
 df$Treatment <- ID$`ID-2`
-#df$Year <- ID$`ID-3`
-#df$Site <- ID$`ID-4`
-
-# Remove file name and replace with ID
-#df <- df %>% separate(file_names, 
-#          c("ID", "Treatment", "Year"))
 
 #add rep # column
 df <- mutate(df, Rep = 1)
 
 
-#write.csv(df, file = "Data/Rep_1_Aci.csv")
-
-
-#### Data wrangling rep 2
-licor_data2 <-list.files(path = "Data/LICOR_rep2", recursive=T,pattern="*.csv", full.names = T) #finds the files in the "LICOR" Folder
-licor_data_Names2 <-gsub(".csv","", licor_data2) %>% gsub("Data/LICOR_rep2/","",.) #grabs file names
-
-for (i in 1:length(licor_data2)) {
-  assign(licor_data_Names2[i], read.csv(licor_data2[i], 
-                                       skip = 13,header = T, as.is=T))
-}
-
-
-
+#write.csv(df, file = "paper2_leaves/Data/Rep_1_Aci.csv")
 
 
 
 ############################################################
 #### Data wrangling rep 2##############################
-licor_data2 <-list.files(path = "Data/LICOR_rep2", recursive=T,pattern="*.csv", full.names = T) #finds the files in the "LICOR" Folder
-licor_data_Names2 <-gsub(".csv","", licor_data2) %>% gsub("Data/LICOR_rep2/","",.) #grabs file names
+licor_data2 <-list.files(path = "paper2_leaves/Data/LICOR_rep2", recursive=T,pattern="*.csv", full.names = T) #finds the files in the "LICOR" Folder
+licor_data_Names2 <-gsub(".csv","", licor_data2) %>% gsub("paper2_leaves/Data/LICOR_rep2/","",.) #grabs file names
 
 for (i in 1:length(licor_data2)) {
   assign(licor_data_Names2[i], read.csv(licor_data2[i], 
                                         skip = 13,header = T, as.is=T))
 }
-
-
-
-
 
 # make a list of all the dataframes
 l.df <- lapply(ls(), function(x) if (class(get(x)) == "data.frame") get(x))
@@ -121,12 +98,6 @@ df <- df[df$obs !=14, ]
 #add new column and merge names into dataframe
 df$ID <- ID$`ID-1`
 df$Treatment <- ID$`ID-2`
-#df$Year <- ID$`ID-3`
-#df$Site <- ID$`ID-4`
-
-# Remove file name and replace with ID
-#df <- df %>% separate(file_names, 
-#          c("ID", "Treatment", "Year"))
 
 #add rep # column
 df <- mutate(df, Rep = 2)
@@ -134,16 +105,13 @@ df <- mutate(df, Rep = 2)
 
 ############################################################
 #### Data wrangling rep 3###################################
-licor_data3 <-list.files(path = "Data/LICOR_rep3", recursive=T,pattern="*.csv", full.names = T) #finds the files in the "LICOR" Folder
-licor_data_Names3 <-gsub(".csv","", licor_data3) %>% gsub("Data/LICOR_rep3/","",.) #grabs file names
+licor_data3 <-list.files(path = "paper2_leaves/Data/LICOR_rep3", recursive=T,pattern="*.csv", full.names = T) #finds the files in the "LICOR" Folder
+licor_data_Names3 <-gsub(".csv","", licor_data3) %>% gsub("paper2_leaves/Data/LICOR_rep3/","",.) #grabs file names
 
 for (i in 1:length(licor_data3)) {
   assign(licor_data_Names3[i], read.csv(licor_data3[i], 
                                         skip = 13,header = T, as.is=T))
 }
-
-
-
 
 
 # make a list of all the dataframes
@@ -179,14 +147,8 @@ df <- df[df$obs !=14, ]
 #add new column and merge names into dataframe
 df$ID <- ID$`ID-1`
 df$Treatment <- ID$`ID-2`
-#df$Year <- ID$`ID-3`
-#df$Site <- ID$`ID-4`
-
-# Remove file name and replace with ID
-#df <- df %>% separate(file_names, 
-      #          c("ID", "Treatment", "Year"))
 
 #add rep # column
 df <- mutate(df, Rep = 3)
 
-#write.csv(df, file = "Data/Rep_3_Aci.csv")
+#write.csv(df, file = "paper2_leaves/Data/Rep_3_Aci.csv")
