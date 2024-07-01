@@ -1,4 +1,4 @@
-####### Mesophyll cell proportions 
+####### Mesophyll cell proportions ########
 library(tidyverse)
 library(lme4)
 library(emmeans)
@@ -11,8 +11,10 @@ library(effectsize)
 meso <- read_csv("Data/Mesophyll_proportions_all.csv")
 meso$Average_prop <- as.numeric(meso$Average_prop)
 
-#proportion of mesophyll that is palisade
+#set up type 3 ANOVA
 type3 <- list(Treatment = contr.sum, Region = contr.sum, PrePeak = contr.sum)
+
+#make model
 mod1 <- lmer(Average_prop ~ Rep + Treatment*PrePeak*Region + (1|Site/ID), contrasts =type3, data=meso)
 
 #check for model violations
@@ -29,9 +31,9 @@ hist(resid(mod1)) #histogram
 plot(mod1, rstudent(.) ~ hatvalues(.)) #residuals vs leverage
 
 
-#grab the coefficents 
+#grab the coefficients and run ANOVA
 dm <- summary(mod1)
-meso_aov <- Anova(mod1,type=3) #treatment < 0.001, Trt*Year = 0.06
+meso_aov <- Anova(mod1,type=3) 
 #write.csv(meso_aov, "Results/meso_aov.csv")
 
 #grab effect sizes of the fixed factors
@@ -72,18 +74,15 @@ adjust.p <- mt.rawp2adjp(summ.contrast$p.value, proc=c("BH"), alpha = 0.05, na.r
 adjust.p.df<- as.data.frame(adjust.p$adjp) %>%
   rename(p.value=rawp)%>%
   inner_join(summ.contrast)
-#Results:
 #write.csv(adjust.p.df, "Results/meso_correctedp.csv")
 
 
-
-## graphs
+## graph
 
 vis_meso_wet<-visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="Wet"))
 vis_meso_dry <- visreg(mod1, xvar="PrePeak", by="Region", cond=list(Treatment="Dry")) 
 
 Res_meso_all <- rbind(vis_meso_wet$res,vis_meso_dry$res)
-
 
 meso_res_se <- Res_meso_all%>%
   group_by(Treatment,Region,PrePeak)%>%
