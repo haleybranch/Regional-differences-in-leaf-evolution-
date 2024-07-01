@@ -14,7 +14,7 @@ aci_data$Vcmax <- as.numeric(aci_data$Vcmax)
 aci_data$Jmax <- as.numeric(aci_data$Jmax)
 aci_data$Ci.transition <- as.numeric(aci_data$Ci.transition)
 aci_data <- na.omit(aci_data)
-aci_data <- aci_data %>% filter(Vcmax < 200)
+aci_data <- aci_data %>% filter(Vcmax < 200) # values above this are outliers from machine error
 aci_data <- na.omit(aci_data)
 
 aci_data$unique <- paste(aci_data$ID,aci_data$Treatment,aci_data$Rep, sep="_")
@@ -35,26 +35,16 @@ phys_corr=data.frame(phys_cor$r)
 
 
 
-######## Anatomy #### 
+### read in anatomy data #### 
 leaves <- read.csv("Data/Mesophyll_proportions_all.csv")
-
 
 leaves$Average_thick <- as.numeric(leaves$Average_thick)
 
-#omit NA data -- all data that has no values 
+#omit NA data
 # csv goes from 261 to 
 leaves <- na.omit(leaves)
 
-#mixed effects model
-#lmer(response ~ effect1*effect2*effect3 + (1|random), data)
-# effect1: treatment = dry or wet 
-# effect2: year = pre or peak (which corresponds to climatic drought timing) 
-# effect 3: site = S02, S07, S11, S15, S16, S36 (these are 3 southern sites and 3 northern)
-# random1 = replicate
-# random2 = PlantID (random sampling of individuals from a given site, not specifically chosen)
-
 #change treatment, prepeak, and site to characters
-#column you want to change $ data <- 
 leaves$Treatment <- as.character(leaves$Treatment)
 leaves$Site <- as.character(leaves$Site)
 leaves$PrePeak <- as.character(leaves$PrePeak)
@@ -62,6 +52,7 @@ leaves$PlantID <- as.character(leaves$ID)
 leaves$Rep <- as.character(leaves$Rep)
 
 #remove S11 and S16
+#These sites were not supposed to be included in the cross-sections
 leaves_subset <- subset(leaves,Site != "S11")
 leaves_subset2 <- subset(leaves_subset, Site != "S16")
 leaves_all <- leaves
